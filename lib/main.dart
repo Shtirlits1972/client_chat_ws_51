@@ -42,7 +42,9 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     final channel = IOWebSocketChannel.connect(url);
     List<MessageChat> listMsg = [];
-
+    ScrollController _scrollController = new ScrollController();
+    // final screen_height = MediaQuery.of(context).size.height;
+    // int i = 0;
     // channel.stream.listen((message) {
     //   print(message);
     //   var msg = MessageChat.fromJson(jsonDecode(message));
@@ -62,30 +64,38 @@ class _MyAppState extends State<MyApp> {
         body: Column(
           children: [
             Expanded(
-                child: Center(
-              child: StreamBuilder(
-                stream: channel.stream,
-                builder: (context, snapshot) {
-                  if (snapshot.data != null) {
-                    MessageChat msg = MessageChat.fromJson(
-                        jsonDecode(snapshot.data.toString()));
-                    if (msg.NameUser != 'Server') {
-                      listMsg.add(msg);
-                    }
-                  }
+              child: Center(
+                child: StreamBuilder(
+                  stream: channel.stream,
+                  builder: (context, snapshot) {
+                    if (snapshot.data != null) {
+                      MessageChat msg = MessageChat.fromJson(
+                          jsonDecode(snapshot.data.toString()));
+                      if (msg.NameUser != 'Server') {
+                        listMsg.add(msg);
 
-                  print(snapshot.data);
-                  int a = 0;
-                  return ListView.builder(
-                    itemCount: listMsg.length,
-                    itemBuilder: (context, index) {
-                      return MessageItem(listMsg[index]);
-                    },
-                  );
-                  //  Text(snapshot.hasData ? '${snapshot.data}' : '')
-                },
+                        _scrollController.animateTo(
+                          listMsg.length * 100,
+                          curve: Curves.easeOut,
+                          duration: const Duration(milliseconds: 100),
+                        );
+                      }
+                    }
+
+                    print(snapshot.data);
+                    int a = 0;
+                    return ListView.builder(
+                      itemCount: listMsg.length,
+                      controller: _scrollController,
+                      itemBuilder: (context, index) {
+                        return MessageItem(listMsg[index]);
+                      },
+                    );
+                    //  Text(snapshot.hasData ? '${snapshot.data}' : '')
+                  },
+                ),
               ),
-            )),
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -93,6 +103,20 @@ class _MyAppState extends State<MyApp> {
                   child: Form(
                     child: TextFormField(
                       controller: controller,
+                      onEditingComplete: () {
+                        try {
+                          String text = controller.text;
+                          MessageChat messageChat = MessageChat(NameUser, text);
+                          String encodedMessage = jsonEncode(messageChat);
+                          channel.sink.add(encodedMessage);
+                          FocusScope.of(context).requestFocus(new FocusNode());
+                        } catch (e) {
+                          print(e);
+                        }
+
+                        print(controller.text);
+                        controller.clear();
+                      },
                       decoration:
                           const InputDecoration(labelText: 'Send a message'),
                     ),
@@ -109,6 +133,7 @@ class _MyAppState extends State<MyApp> {
               MessageChat messageChat = MessageChat(NameUser, text);
               String encodedMessage = jsonEncode(messageChat);
               channel.sink.add(encodedMessage);
+              FocusScope.of(context).requestFocus(new FocusNode());
             } catch (e) {
               print(e);
             }

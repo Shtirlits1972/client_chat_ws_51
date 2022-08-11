@@ -12,9 +12,10 @@ Widget MessageItem(MessageChat messageChat) {
             padding: const EdgeInsets.all(4.0),
             child: Text(
               messageChat.Text,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 30,
                 color: Colors.black,
+                overflow: TextOverflow.fade,
               ),
             ),
           ),
@@ -51,6 +52,7 @@ Widget MessageItem(MessageChat messageChat) {
               style: const TextStyle(
                 fontSize: 30,
                 color: Colors.black,
+                overflow: TextOverflow.clip,
               ),
             ),
           ),
