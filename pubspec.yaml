@@ -1,0 +1,32 @@
+name: client_chat_ws_51
+description: A new Flutter project.
+
+publish_to: 'none' # 
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=2.12.0 <3.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  web_socket_channel: ^2.2.0
+  json_annotation:  ^4.6.0
+  json_serializable: ^6.3.1
+  google_fonts: ^3.0.1
+  provider: ^6.0.3
+  sqflite:
+
+  cupertino_icons: ^1.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  lints: ^2.0.0
+  build_runner: ^2.2.0
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+
