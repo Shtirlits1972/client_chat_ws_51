@@ -1,10 +1,14 @@
 //import 'package:client_chat_ws_51/Repo/repo_messages.dart';
 //import 'package:client_chat_ws_51/Widgets/message_item.dart';
+import 'package:client_chat_ws_51/Block/app_block_observer.dart';
+import 'package:client_chat_ws_51/Block/message_block.dart';
 import 'package:client_chat_ws_51/Repo/repo_message.dart';
 import 'package:client_chat_ws_51/Widgets/message_item.dart';
+import 'package:client_chat_ws_51/Widgets/text_message.dart';
 import 'package:client_chat_ws_51/constants.dart';
 import 'package:client_chat_ws_51/message_chat.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 //import 'package:provider/provider.dart';
 
@@ -15,16 +19,22 @@ import 'package:web_socket_channel/io.dart';
 //import 'package:provider/provider.dart';
 
 void main() {
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (_) => RepoMessages(),
-        ),
-      ],
-      child: const MyApp(),
-    ),
+  // ignore: deprecated_member_use
+  BlocOverrides.runZoned(
+    () => runApp(const MyApp()),
+    blocObserver: AppBlocObserver(),
   );
+
+  // runApp(
+  //   MultiProvider(
+  //     providers: [
+  //       ChangeNotifierProvider(
+  //         create: (_) => RepoMessages(),
+  //       ),
+  //     ],
+  //     child: const MyApp(),
+  //   ),
+  // );
 }
 
 class MyApp extends StatefulWidget {
@@ -41,7 +51,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     final channel = IOWebSocketChannel.connect(url);
-    List<MessageChat> listMsg = [];
+    //  List<MessageChat> listMsg = [];
     ScrollController _scrollController = new ScrollController();
     // final screen_height = MediaQuery.of(context).size.height;
     // int i = 0;
@@ -51,98 +61,110 @@ class _MyAppState extends State<MyApp> {
     //   print('${msg.NameUser}: ${msg.Text}');
     // });
 
-    return MaterialApp(
-      title: 'Client chat',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Websocket Chat Client'),
-          centerTitle: true,
+    return BlocProvider(
+      create: (_) => MessageCubit(Keeper()),
+      child: MaterialApp(
+        title: 'Client chat',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
         ),
-        body: Column(
-          children: [
-            Expanded(
-              child: Center(
-                child: StreamBuilder(
-                  stream: channel.stream,
-                  builder: (context, snapshot) {
-                    if (snapshot.data != null) {
-                      MessageChat msg = MessageChat.fromJson(
-                          jsonDecode(snapshot.data.toString()));
-                      if (msg.NameUser != 'Server') {
-                        listMsg.add(msg);
-
-                        _scrollController.animateTo(
-                          listMsg.length * 100,
-                          curve: Curves.easeOut,
-                          duration: const Duration(milliseconds: 100),
-                        );
-                      }
-                    }
-
-                    print(snapshot.data);
-                    int a = 0;
-                    return ListView.builder(
-                      itemCount: listMsg.length,
-                      controller: _scrollController,
-                      itemBuilder: (context, index) {
-                        return MessageItem(listMsg[index]);
-                      },
-                    );
-                    //  Text(snapshot.hasData ? '${snapshot.data}' : '')
-                  },
-                ),
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        home: Scaffold(
+          appBar: AppBar(
+            title: const Text('Websocket Chat Client'),
+            centerTitle: true,
+          ),
+          body: BlocBuilder<MessageCubit, Keeper>(builder: (context, state) {
+            return Column(
               children: [
                 Expanded(
-                  child: Form(
-                    child: TextFormField(
-                      controller: controller,
-                      onEditingComplete: () {
-                        try {
-                          String text = controller.text;
-                          MessageChat messageChat = MessageChat(NameUser, text);
-                          String encodedMessage = jsonEncode(messageChat);
-                          channel.sink.add(encodedMessage);
-                          FocusScope.of(context).requestFocus(new FocusNode());
-                        } catch (e) {
-                          print(e);
-                        }
+                  child: StreamBuilder(
+                    stream: channel.stream,
+                    builder: (context, snapshot) {
+                      if (snapshot.data != null) {
+                        MessageChat msg = MessageChat.fromJson(
+                            jsonDecode(snapshot.data.toString()));
 
-                        print(controller.text);
-                        controller.clear();
-                      },
-                      decoration:
-                          const InputDecoration(labelText: 'Send a message'),
-                    ),
+                        if (msg.NameUser != 'Server') {
+                          //   listMsg.add(msg);
+                          state.listMessages.add(msg);
+
+                          int y = 0;
+
+                          _scrollController.animateTo(
+                            state.listMessages.length * 100,
+                            curve: Curves.easeOut,
+                            duration: const Duration(milliseconds: 100),
+                          );
+                        }
+                      }
+
+                      print(snapshot.data);
+                      int a = 0;
+                      return ListView.builder(
+                        itemCount: state.listMessages.length,
+                        controller: _scrollController,
+                        itemBuilder: (context, index) {
+                          return TextMessage(
+                            message: state.listMessages[index],
+                          );
+                          // return MessageItem(state.listMessages[index]);
+                        },
+                      );
+                      //  Text(snapshot.hasData ? '${snapshot.data}' : '')
+                    },
                   ),
                 ),
-              ],
-            ),
-          ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            try {
-              String text = controller.text;
-              MessageChat messageChat = MessageChat(NameUser, text);
-              String encodedMessage = jsonEncode(messageChat);
-              channel.sink.add(encodedMessage);
-              FocusScope.of(context).requestFocus(new FocusNode());
-            } catch (e) {
-              print(e);
-            }
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Expanded(
+                      child: Form(
+                        child: TextFormField(
+                          controller: controller,
+                          onEditingComplete: () {
+                            try {
+                              String text = controller.text;
+                              MessageChat messageChat =
+                                  MessageChat(NameUser, text);
+                              String encodedMessage = jsonEncode(messageChat);
+                              channel.sink.add(encodedMessage);
+                              FocusScope.of(context)
+                                  .requestFocus(new FocusNode());
+                            } catch (e) {
+                              print(e);
+                            }
 
-            print(controller.text);
-            controller.clear();
-          },
-          tooltip: 'Send message',
-          child: const Icon(Icons.telegram),
+                            print(controller.text);
+                            controller.clear();
+                          },
+                          decoration: const InputDecoration(
+                              labelText: 'Send a message'),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          }),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              try {
+                String text = controller.text;
+                MessageChat messageChat = MessageChat(NameUser, text);
+                String encodedMessage = jsonEncode(messageChat);
+                channel.sink.add(encodedMessage);
+                FocusScope.of(context).requestFocus(new FocusNode());
+              } catch (e) {
+                print(e);
+              }
+
+              print(controller.text);
+              controller.clear();
+            },
+            tooltip: 'Send message',
+            child: const Icon(Icons.telegram),
+          ),
         ),
       ),
     );
