@@ -1,7 +1,14 @@
 import 'package:client_chat_ws_51/message_chat.dart';
 import 'package:flutter/material.dart';
+import 'package:web_socket_channel/io.dart';
 
+// String url = 'wss://serverchatwebsocket.somee.com/ws';
+const String dbName = 'chatDB.db';
+//  "wss://localhost:44375/ws"; //
+//
 String url = 'ws://serverchat-001-site1.htempurl.com/ws';
+final channel = IOWebSocketChannel.connect(url);
+//
 String NameUser = 'Veider';
 String Password = '123';
 
