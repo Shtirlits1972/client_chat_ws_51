@@ -1,5 +1,5 @@
 // import 'package:chat/models/ChatMessage.dart';
-import 'package:client_chat_ws_51/message_chat.dart';
+import 'package:client_chat_ws_51/Models/message_chat.dart';
 import 'package:flutter/material.dart';
 
 import '../../../constants.dart';
@@ -43,7 +43,7 @@ class TextMessage extends StatelessWidget {
               horizontal: kDefaultPadding * 0.75,
               vertical: kDefaultPadding / 2),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 message.NameUser,

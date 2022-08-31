@@ -1,13 +1,11 @@
 import 'package:client_chat_ws_51/Block/app_block_observer.dart';
 import 'package:client_chat_ws_51/Block/message_block.dart';
-import 'package:client_chat_ws_51/Forms/chat_form.dart';
-import 'package:client_chat_ws_51/Forms/login_form.dart';
-import 'package:client_chat_ws_51/Repo/repo_message.dart';
+import 'package:client_chat_ws_51/Models/users.dart';
 import 'package:client_chat_ws_51/Widgets/message_item.dart';
 import 'package:client_chat_ws_51/Widgets/text_message.dart';
 import 'package:client_chat_ws_51/constants.dart';
 import 'package:client_chat_ws_51/dataBase/params_crud.dart';
-import 'package:client_chat_ws_51/message_chat.dart';
+import 'package:client_chat_ws_51/Models/message_chat.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:convert';
@@ -37,7 +35,14 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     TextEditingController loginController = TextEditingController();
     TextEditingController passController = TextEditingController();
+
+    TextEditingController registerEmailLoginController =
+        TextEditingController();
+    TextEditingController registerPassController = TextEditingController();
+    TextEditingController registerUserFioController = TextEditingController();
+
     bool IsRemember = true;
+    bool regIsRemember = true;
 
     ScrollController _scrollController = new ScrollController();
     // final screen_height = MediaQuery.of(context).size.height;
@@ -176,19 +181,7 @@ class _MyAppState extends State<MyApp> {
                             ),
                           ),
                           MaterialButton(
-                            onPressed: () async {
-                              String loginValue =
-                                  await ParamsCrud.getParam('NameUser');
-                              print('loginValue = $loginValue');
-
-                              String passwordValue =
-                                  await ParamsCrud.getParam('Password');
-                              print('passwordValue = $passwordValue');
-
-                              String rememberValue =
-                                  await ParamsCrud.getParam('Remember');
-                              print('rememberValue = $rememberValue');
-
+                            onPressed: () {
                               setState(() {
                                 state.appState = AppState.Register;
                               });
@@ -311,14 +304,176 @@ class _MyAppState extends State<MyApp> {
                       ],
                     );
                   } else if (state.appState == AppState.Register) {
-                    print('not implemented  :-(');
+                    print('Register form');
                     return Center(
-                      child: Text(
-                        'Register',
-                        style: TextStyle(fontSize: 30, color: Colors.black),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: TextField(
+                              controller: registerEmailLoginController,
+                              keyboardType: TextInputType.emailAddress,
+                              decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: 'Email',
+                                  hintText:
+                                      'Enter valid mail id as abc@gmail.com'),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: TextField(
+                              controller: registerUserFioController,
+                              keyboardType: TextInputType.emailAddress,
+                              decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: 'User name',
+                                  hintText: 'Enter user name: Djon Smith'),
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(10),
+                            child: TextField(
+                              controller: registerPassController,
+                              obscureText: true,
+                              decoration: InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: 'Password',
+                                  hintText: 'Enter your secure password'),
+                            ),
+                          ),
+                          Container(
+                            width: MediaQuery.of(context).size.width - 20,
+                            decoration: BoxDecoration(
+                                color: Colors.blue,
+                                borderRadius: BorderRadius.circular(10)),
+                            child: TextButton(
+                              child: Text(
+                                'SEND REGISTER',
+                                style: TextStyle(
+                                    fontSize: 30, color: Colors.white),
+                              ),
+                              onPressed: () async {
+                                print('send register');
+
+                                String ErrorMsg = 'ERROR!';
+                                bool IsError = false;
+
+                                String RegLoginEmail =
+                                    registerEmailLoginController.text;
+                                String RegUserFio =
+                                    registerUserFioController.text;
+                                String RegPassword =
+                                    registerPassController.text;
+
+                                bool boolEmailValid =
+                                    isEmail(RegLoginEmail.trim());
+
+                                if (!boolEmailValid) {
+                                  IsError = true;
+                                  ErrorMsg += '\r\n Email is not valid!';
+                                }
+
+                                if (RegUserFio.trim().isEmpty) {
+                                  IsError = true;
+                                  ErrorMsg += '\r\n User name is empty!';
+                                }
+
+                                if (RegPassword.length < 8) {
+                                  IsError = true;
+                                  ErrorMsg +=
+                                      '\r\n password must be at least 8 characters long !';
+                                }
+
+                                if (IsError) {
+                                  final snackBar = SnackBar(
+                                    content: Text(ErrorMsg),
+                                    duration: Duration(
+                                      seconds: 5,
+                                    ),
+                                  );
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(snackBar);
+                                } else {
+                                  String regRememberStr = 'T';
+
+                                  if (!IsRemember) {
+                                    regRememberStr = 'F';
+                                  }
+
+                                  await ParamsCrud.updParam(
+                                      'NameUser', RegLoginEmail);
+                                  await ParamsCrud.updParam(
+                                      'Password', RegPassword);
+                                  await ParamsCrud.updParam(
+                                      'Remember', regRememberStr);
+
+                                  try {
+                                    Users newUser = Users(0, RegLoginEmail,
+                                        RegPassword, 'Юзер', RegUserFio);
+
+                                    String userJson = jsonEncode(newUser);
+                                    DateTime timeReg = DateTime.now();
+
+                                    MessageChat regMessage = MessageChat(
+                                        RegLoginEmail,
+                                        RegUserFio,
+                                        userJson,
+                                        timeReg,
+                                        TypeOfMessage.Register);
+                                    String msgJson = jsonEncode(regMessage);
+
+                                    setState(() {
+                                      state.login = RegLoginEmail;
+                                    });
+
+                                    channel.sink.add(msgJson);
+
+                                    print('send registration');
+                                  } catch (e) {
+                                    print(e);
+                                  }
+                                }
+                              },
+                            ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Checkbox(
+                                  value: regIsRemember,
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      regIsRemember = value!;
+                                    });
+                                    print(regIsRemember);
+                                  }),
+                              Container(
+                                child: Text(
+                                  'Remember me',
+                                  style: TextStyle(
+                                      color: Colors.blue, fontSize: 25),
+                                ),
+                              )
+                            ],
+                          ),
+                          TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  state.appState = AppState.Login;
+                                });
+                              },
+                              child: const Text(
+                                'BACK TO LOGIN',
+                                style:
+                                    TextStyle(fontSize: 30, color: Colors.blue),
+                              ))
+                        ],
                       ),
                     );
                   }
+
                   return Text(
                     'Error',
                     style: TextStyle(fontSize: 30, color: Colors.black),
@@ -338,6 +493,13 @@ class _MyAppState extends State<MyApp> {
       ),
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  bool isEmail(String em) {
+    String p =
+        r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
+    RegExp regExp = new RegExp(p);
+    return regExp.hasMatch(em);
   }
 
   @override

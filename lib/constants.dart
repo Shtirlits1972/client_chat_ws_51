@@ -1,4 +1,4 @@
-import 'package:client_chat_ws_51/message_chat.dart';
+import 'package:client_chat_ws_51/Models/message_chat.dart';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/io.dart';
 
