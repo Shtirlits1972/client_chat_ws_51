@@ -8,12 +8,22 @@ class Keeper {
   Keeper();
   Keeper.init(this.listMessages, this.login, this.password, this.IsRemember);
 
+  AppState appState = AppState.Login;
+
   String login = '';
   String password = '';
   bool IsRemember = false;
 }
 
+enum AppState { Register, Login, Chat }
+
 class MessageCubit extends Cubit<Keeper> {
+  AppState get getState => state.appState;
+
+  setAppState(AppState NewAppState) {
+    state.appState = NewAppState;
+  }
+
   MessageCubit(Keeper initState) : super(initState);
 
   Future<bool> getRemember() async {

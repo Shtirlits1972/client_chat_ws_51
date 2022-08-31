@@ -1,4 +1,5 @@
 class MessageChat {
+  // String LoginUser = '';
   String NameUser = "";
   String Text = "";
   TypeOfMessage type = TypeOfMessage.Text;
@@ -7,13 +8,13 @@ class MessageChat {
 
   MessageChat.fromJson(Map<String, dynamic> json)
       : NameUser = json['NameUser'],
-        type = json['type'],
+        type = TypeOfMessage.values[json['type']],
         Text = json['Text'];
 
   Map<String, dynamic> toJson() => {
         "NameUser": NameUser,
         "Text": Text,
-        "type": type,
+        "type": TypeOfMessage.values.indexOf(type),
       };
 
   @override
@@ -22,4 +23,4 @@ class MessageChat {
   }
 }
 
-enum TypeOfMessage { Text, LogIn, Error, Success, ServerInfo }
+enum TypeOfMessage { Text, LogIn, Error, Success, ServerInfo, Register }
