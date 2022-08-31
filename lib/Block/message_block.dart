@@ -11,6 +11,7 @@ class Keeper {
   AppState appState = AppState.Login;
 
   String login = '';
+  String NameUser = '';
   String password = '';
   bool IsRemember = false;
 }
@@ -50,18 +51,3 @@ class MessageCubit extends Cubit<Keeper> {
     emit(Keeper());
   }
 }
-
-
-// class MessageCubit extends Cubit<ClassOverall> {
-//   MessageCubit(ClassOverallinitialState) : super(ClassOverallinitialState);
-
-//   void add(MessageChat message) {
-//     state.items.add(message);
-
-//     for (int i = 0; i < state.items.length; i++) {
-//       print(state.items[i]);
-//     }
-
-//     emit(ClassOverall());
-//   }
-// }

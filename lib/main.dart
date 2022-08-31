@@ -57,6 +57,14 @@ class _MyAppState extends State<MyApp> {
             String strRemember = '';
             ParamsCrud.getParam('Remember').then((String value) {
               print('Remember from block = $value');
+              if (value == 'T') {
+                ParamsCrud.getParam('NameUser').then((String value) {
+                  loginController.text = value;
+                });
+                ParamsCrud.getParam('Password').then((String value) {
+                  passController.text = value;
+                });
+              }
             });
 
             return StreamBuilder(
@@ -94,11 +102,11 @@ class _MyAppState extends State<MyApp> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Padding(
-                            padding: EdgeInsets.all(10),
+                            padding: const EdgeInsets.all(10),
                             child: TextField(
                               controller: loginController,
                               keyboardType: TextInputType.emailAddress,
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                   border: OutlineInputBorder(),
                                   labelText: 'Email',
                                   hintText:
@@ -146,9 +154,15 @@ class _MyAppState extends State<MyApp> {
                                 await ParamsCrud.updParam(
                                     'Remember', rememberValue);
 
+                                state.login = loginValue;
+
+                                DateTime time = DateTime.now();
+
                                 MessageChat messageChat = MessageChat(
                                     loginValue,
+                                    loginValue,
                                     loginValue + '\$' + passwordValue,
+                                    time,
                                     TypeOfMessage.LogIn);
 
                                 String encodedMessage = jsonEncode(messageChat);
@@ -216,9 +230,16 @@ class _MyAppState extends State<MyApp> {
                             itemCount: state.listMessages.length,
                             controller: _scrollController,
                             itemBuilder: (context, index) {
+                              bool IsMay = false;
+
+                              if (state.listMessages[index].LoginEmail ==
+                                  state.login) {
+                                IsMay = true;
+                              }
+                              int y = 0;
                               return TextMessage(
-                                message: state.listMessages[index],
-                              );
+                                  message: state.listMessages[index],
+                                  IsMay: IsMay);
                             },
                           ),
                         ),
@@ -233,8 +254,13 @@ class _MyAppState extends State<MyApp> {
                                   onEditingComplete: () {
                                     try {
                                       String text = controller.text;
+                                      DateTime time = DateTime.now();
                                       MessageChat messageChat = MessageChat(
-                                          NameUser, text, TypeOfMessage.Text);
+                                          state.NameUser,
+                                          NameUser,
+                                          text,
+                                          time,
+                                          TypeOfMessage.Text);
                                       String encodedMessage =
                                           jsonEncode(messageChat);
                                       channel.sink.add(encodedMessage);
@@ -258,8 +284,13 @@ class _MyAppState extends State<MyApp> {
                                   onPressed: () {
                                     try {
                                       String text = controller.text;
+                                      DateTime time = DateTime.now();
                                       MessageChat messageChat = MessageChat(
-                                          NameUser, text, TypeOfMessage.Text);
+                                          NameUser,
+                                          NameUser,
+                                          text,
+                                          time,
+                                          TypeOfMessage.Text);
                                       String encodedMessage =
                                           jsonEncode(messageChat);
                                       channel.sink.add(encodedMessage);

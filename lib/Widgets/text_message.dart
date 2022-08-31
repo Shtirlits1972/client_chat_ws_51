@@ -5,12 +5,11 @@ import 'package:flutter/material.dart';
 import '../../../constants.dart';
 
 class TextMessage extends StatelessWidget {
-  const TextMessage({
-    Key? key,
-    required this.message,
-  }) : super(key: key);
+  const TextMessage({Key? key, required this.message, required this.IsMay})
+      : super(key: key);
 
   final MessageChat message;
+  final bool IsMay;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +33,7 @@ class TextMessage extends StatelessWidget {
           ],
         ));
 
-    if (message.NameUser != NameUser) {
+    if (!IsMay) {
       container = Container(
           margin: const EdgeInsets.only(top: kDefaultPadding, right: 50),
           decoration: BoxDecoration(
@@ -44,7 +43,7 @@ class TextMessage extends StatelessWidget {
               horizontal: kDefaultPadding * 0.75,
               vertical: kDefaultPadding / 2),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
                 message.NameUser,

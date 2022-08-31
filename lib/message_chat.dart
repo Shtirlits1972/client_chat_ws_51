@@ -1,25 +1,31 @@
 class MessageChat {
-  // String LoginUser = '';
+  String LoginEmail = '';
   String NameUser = "";
   String Text = "";
+  DateTime DataMsg;
   TypeOfMessage type = TypeOfMessage.Text;
 
-  MessageChat(this.NameUser, this.Text, this.type);
+  MessageChat(
+      this.LoginEmail, this.NameUser, this.Text, this.DataMsg, this.type);
 
   MessageChat.fromJson(Map<String, dynamic> json)
-      : NameUser = json['NameUser'],
+      : LoginEmail = json['LoginEmail'],
+        NameUser = json['NameUser'],
+        DataMsg = DateTime.parse(json['DataMsg'].toString()),
         type = TypeOfMessage.values[json['type']],
         Text = json['Text'];
 
   Map<String, dynamic> toJson() => {
+        "LoginEmail": LoginEmail,
         "NameUser": NameUser,
         "Text": Text,
+        "DataMsg": DataMsg.toString(),
         "type": TypeOfMessage.values.indexOf(type),
       };
 
   @override
   String toString() {
-    return 'NameUser = $NameUser, Text = $Text, type = $type ';
+    return 'LoginEmail = $LoginEmail, NameUser = $NameUser, Text = $Text, DataMsg = $DataMsg, type = $type ';
   }
 }
 
